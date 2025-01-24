@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+  # computing unit
+  train-ml:
+    shm_size: '2gb'
+    image: tannous/tannous:train-ml-ubuntu.22.04-cuda.12.5.1
+    container_name: train-ml-core
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    build:
+      context: .
+      args:
+        user: ${user}
+        userid: ${userid}
+        group: ${group}
+        groupid: ${groupid}
+    network_mode: host
+    env_file: .env
+    restart: unless-stopped
+    working_dir: /home/$user/src
+    volumes:
+      - .:/home/$user/src
+      - /home/waminion09/WA_Development/Database:/media
+    user: ${user}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
