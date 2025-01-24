@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.5.1-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:11.5.2-cudnn8-runtime-ubuntu20.04
 
 # Maintainer instructions has been deprecated, instead use LABEL
 LABEL maintainer="tannous.geagea@wasteant.com"
@@ -90,7 +90,6 @@ RUN addgroup --gid $groupid $group && \
 RUN mkdir -p /home/$user/src
 COPY . /home/$user/src
 
-
 RUN /bin/bash -c "chown -R $user:$user /home/$user/"
 RUN /bin/bash -c "chown -R $user:$user /media"
 
@@ -98,9 +97,7 @@ RUN /bin/bash -c "chown -R $user:$user /media"
 RUN mkdir -p /var/log/supervisor && \
     chmod -R 755 /var/log/supervisor
 	
-
 COPY ./supervisord.conf /etc/supervisord.conf
-
 COPY ./entrypoint.sh /home/.
 RUN /bin/bash -c "chown $user:$user /home/entrypoint.sh"
 
