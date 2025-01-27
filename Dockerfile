@@ -75,6 +75,9 @@ RUN pip3 install grpcio-tools
 # RUN pip3 install confluent-kafka
 RUN pip3 install mlflow
 RUN pip3 install azureml-mlflow
+RUN pip3 install django-unfold
+RUN pip3 install django-storages[azure]
+RUN pip3 install psycopg2-binary
 
 # upgrade everything
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get upgrade -q -y \

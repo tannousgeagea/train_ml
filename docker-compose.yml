@@ -15,8 +15,15 @@ services:
         userid: ${userid}
         group: ${group}
         groupid: ${groupid}
-    network_mode: host
+    networks:
+      - internal
+    ports:
+      - 9090:9090
+      - 8081:8081
+      - 8083:8083
     env_file: .env
+    depends_on:
+      - postgres
     restart: unless-stopped
     working_dir: /home/$user/src
     volumes:
@@ -30,3 +37,24 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+
+  postgres:
+    image: postgres:latest
+    container_name: train-ml-postgres
+    env_file: .env
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    networks:
+     - internal
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+networks:
+  internal:
+    driver: bridge 
+
+volumes:
+  postgres_data:
