@@ -17,17 +17,40 @@ seg_model = ModelVersion.objects.filter(
 ).order_by('-version').first()
 
 
-seg_model = YOLO(seg_model.checkpoint.path, conf=0.1)
+seg_model = YOLO(seg_model.checkpoint.path)
 
-model = YOLO('/home/appuser/src/train_ml/runs/detect/garbage_classification.v1.2/weights/best.pt')
+model = YOLO('/home/appuser/src/train_ml/runs/detect/waste_material_classification_synthetic/weights/best.pt')
 app = FastAPI()
 
 class PredictionResponse(BaseModel):
     predictions: list
 
 
+# colors = [
+#     "#" + hex(random.randrange(0, 2**24))[2:] for _ in range(20)
+# ]
+
 colors = [
-    "#" + hex(random.randrange(0, 2**24))[2:] for _ in range(20)
+    "#540bbb",
+    "#39f985",
+    "#969035",
+    "#dddc06",
+    "#185705",
+    "#c2da7b",
+    "#baf1ed",
+    "#4c6ccc",
+    "#214da3",
+    "#4186c",
+    "#cfc1e4",
+    "#6f68cb",
+    "#f53b33",
+    "#e1e2ab",
+    "#66b100",
+    "#4b1cad",
+    "#7ee4e2",
+    "#656d91",
+    "#aceb71",
+    "#891c7c"
 ]
 
 
@@ -62,7 +85,7 @@ async def infer(image: UploadFile = File(...)):
     nparr = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    results = seg_model.predict(img)
+    results = seg_model.predict(img, conf=0.25)
     results = results[0]
     boxes = results.boxes
     xyxy = boxes.xyxyn.cpu().numpy().tolist()
@@ -71,12 +94,13 @@ async def infer(image: UploadFile = File(...)):
 
     classes = []
     class_ids = []
+    
     for i, polygon in enumerate(xy):
         kernel = np.ones((5, 5), np.uint8)
         polygon = polygon.astype(np.int32)
         epsilon = 0.01 * cv2.arcLength(polygon, True)
         polygon = cv2.approxPolyDP(polygon, epsilon, True)
-        w0, h0 = 416, 416
+        w0, h0 = 640, 640
         
         polygon = rescale_polygon(polygon, wh0=(img.shape[1], img.shape[0]), wh=(w0, h0))
         mask = polygon_to_mask(polygon, resolution_wh=(w0, h0))
@@ -124,7 +148,7 @@ async def infer(image: UploadFile = File(...)):
             "width": _xyxy[2] - _xyxy[0],
             "height": _xyxy[3] - _xyxy[1], 
             "confidence": boxes.conf.cpu().numpy().tolist()[i],
-            "class_id": boxes.cls.cpu().numpy().astype(int).tolist()[i],
+            "class_id": class_ids[i], #boxes.cls.cpu().numpy().astype(int).tolist()[i],
             "class": classes[i], #results.names[boxes.cls.cpu().numpy().astype(int).tolist()[i]],
             "id": str(i),
             "color": colors[class_ids[i]] #colors[boxes.cls.cpu().numpy().astype(int).tolist()[i]],
