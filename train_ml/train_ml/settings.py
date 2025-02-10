@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "users",
-    "models",
+    "ml_models",
 ]
 
 MIDDLEWARE = [
@@ -222,28 +222,28 @@ UNFOLD = {
                         "title": _("Model Tasks"),
                         "icon": "task",
                         "link": reverse_lazy(
-                            "admin:models_modeltask_changelist"
+                            "admin:ml_models_modeltask_changelist"
                             ),
                     },
                     {
                         "title": _("Model Framework"),
                         "icon": "flutter_dash",
                         "link": reverse_lazy(
-                            "admin:models_modelframework_changelist"
+                            "admin:ml_models_modelframework_changelist"
                             ),
                     },
                     {
                         "title": _("ML Models"),
                         "icon": "mindfulness",
                         "link": reverse_lazy(
-                            "admin:models_model_changelist"
+                            "admin:ml_models_model_changelist"
                             ),
                     },
                     {
                         "title": _("Model Versions"),
                         "icon": "backup_table",
                         "link": reverse_lazy(
-                            "admin:models_modelversion_changelist"
+                            "admin:ml_models_modelversion_changelist"
                             ),
                     }
                 ],
