@@ -1,8 +1,17 @@
 from django.db import models
+from projects.models import Project
+from datasets.models import Dataset
 from django.core.validators import FileExtensionValidator
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 def get_model_path(instance, filename):
     return f"{instance.model.name}/{instance.version}/{filename}"
+
+def get_model_artifact_path(instance, filename):
+    return f"models/{instance.model.name}/v{instance.version}/artifacts/{filename}"
+
 
 class ModelTask(models.Model):
     name = models.CharField(max_length=255)
@@ -28,6 +37,17 @@ class ModelFramework(models.Model):
     def __str__(self):
         return f"Framework: {self.name}"
 
+class ModelTag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'model_tag'
+        verbose_name_plural = 'Model Tags'
+
+    def __str__(self):
+        return f"{self.name}"
+
 class Model(models.Model):
     name = models.CharField(max_length=255, unique=True)
     task = models.ForeignKey(ModelTask, on_delete=models.RESTRICT)
@@ -35,7 +55,9 @@ class Model(models.Model):
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    project_id = models.CharField(max_length=255, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='models')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    tags = models.ManyToManyField(ModelTag, blank=True, related_name='models')
 
     class Meta:
         db_table = "ml_model"
@@ -46,16 +68,29 @@ class Model(models.Model):
 
 
 class ModelVersion(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('training', 'Training'),
+        ('trained', 'Trained'),
+        ('failed', 'Failed'),
+        ('deployed', 'Deployed'),
+    ]
     model = models.ForeignKey('Model', on_delete=models.RESTRICT, related_name='versions')
     version = models.CharField(max_length=50)
     checkpoint = models.FileField(
-        upload_to=get_model_path,
+        upload_to=get_model_artifact_path,
         validators=[FileExtensionValidator(allowed_extensions=['pt', 'pth', 'h5', 'onnx'])],
         max_length=1024, 
         null=True,
         blank=True,
     )
+    dataset_version = models.ForeignKey(Dataset, on_delete=models.SET_NULL, null=True, blank=True, related_name='trained_models')
+    config = models.JSONField(null=True, blank=True)
+    metrics = models.JSONField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    logs = models.FileField(upload_to=get_model_artifact_path, null=True, blank=True)
 
     class Meta:
         db_table = "model_verison"
