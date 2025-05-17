@@ -11,22 +11,22 @@ from fastapi import FastAPI, File, UploadFile
 from common_utils.detection.convertor import copy_and_paste
 from common_utils.detection.core import Detections
 from common_utils.model.base import BaseModels
-from models.models import (
+from ml_models.models import (
     ModelVersion
 )
 
-seg_model = ModelVersion.objects.filter(
-    model__name="waste-segmentation-gate"
-).order_by('-version').first()
+# seg_model = ModelVersion.objects.filter(
+#     model__name="waste-segmentation-gate"
+# ).order_by('-version').first()
 
 
-seg_model = BaseModels(
-    weights=seg_model.checkpoint.path,
-)
+# seg_model = BaseModels(
+#     weights=seg_model.checkpoint.path,
+# )
 
-model = BaseModels(
-    weights='/home/appuser/src/train_ml/runs/detect/waste_material_classification_synthetic/weights/best.pt'
-    )
+# model = BaseModels(
+#     weights='/home/appuser/src/train_ml/runs/detect/waste_material_classification_synthetic/weights/best.pt'
+#     )
 
 app = FastAPI()
 

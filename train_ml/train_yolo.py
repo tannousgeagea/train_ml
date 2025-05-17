@@ -29,6 +29,8 @@ def main():
         batch=args.batch,
         augment=args.augment,
         name=args.name,
+        workers=0,
+        verbose=True
     )
 
 if __name__ == "__main__":

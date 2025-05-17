@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 runs/
-yolo*
+*.pt
 # C extensions
 *.so
 
