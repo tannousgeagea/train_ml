@@ -4,7 +4,7 @@ services:
   # computing unit
   train-ml:
     shm_size: '2gb'
-    image: tannous/tannous:train-ml-ubuntu.22.04-cuda.11.5.1
+    image: tannousgeagea/train_ml:latest
     container_name: train-ml-core
     stdin_open: true # docker run -i
     tty: true        # docker run -t
@@ -17,8 +17,10 @@ services:
         groupid: ${groupid}
     networks:
       - internal
+    dns:
+      10.0.0.5
     ports:
-      - 9090:9090
+      - 9091:9090
       - 8081:8081
       - 8083:8083
     env_file: .env
@@ -28,7 +30,7 @@ services:
     working_dir: /home/$user/src
     volumes:
       - .:/home/$user/src
-      - /home/wasteantadmin/Workspace/Datasets:/media
+      - /home/wasteant/ws/Datasets:/media
     user: ${user}
     deploy:
       resources:
