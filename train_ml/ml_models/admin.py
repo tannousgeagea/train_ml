@@ -4,6 +4,7 @@ from .models import (
     Model,
     ModelVersion,
     ModelTask,
+    ModelTag,
     ModelFramework,
 )
 # Register your models here.
@@ -16,8 +17,13 @@ class ModelTaskAdmin(ModelAdmin):
 class ModelFrameworkAdmin(ModelAdmin):
     list_display = ("name", "description", "created_at")
 
+@admin.register(ModelTag)
+class ModelTagAdmin(ModelAdmin):
+    list_display = ("name", "description")
+    search_fields = ("name",)
+
 @admin.register(Model)
-class ModelAdmin(ModelAdmin):
+class MLModelAdmin(ModelAdmin):
     list_display = ("id", "name", "task", "framework")
     
 @admin.register(ModelVersion)

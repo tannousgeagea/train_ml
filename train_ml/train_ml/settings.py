@@ -43,7 +43,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "users",
+    "projects",
+    "datasets",
     "ml_models",
+    "training",
 ]
 
 MIDDLEWARE = [
@@ -154,7 +157,6 @@ UNFOLD = {
     #     "light": lambda request: static("logo-light.svg"),  # light mode
     #     "dark": lambda request: static("logo-dark.svg"),  # dark mode
     # },
-    "SITE_SYMBOL": "speed",  # symbol from icon set
     "SITE_FAVICONS": [
         {
             "rel": "icon",
@@ -168,7 +170,7 @@ UNFOLD = {
     # "THEME": "dark", # Force theme: "dark" or "light". Will disable theme switcher
     "LOGIN": {
         "image": lambda request: static("images/login.jpeg"),
-        "redirect_after": lambda request: reverse_lazy("admin:tenants_tenant_changelist"),
+        "redirect_after": lambda request: reverse_lazy("admin:ml_models_model_changelist"),
     },
     "EXTENSIONS": {
         "modeltranslation": {
@@ -215,6 +217,53 @@ UNFOLD = {
                 ],
             },
             {
+                "title": _("Projects"),
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Project Types"),
+                        "icon": 'task',
+                        "link": reverse_lazy(
+                            "admin:projects_projecttype_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Visibility"),
+                        "icon": 'visibility',
+                        "link": reverse_lazy(
+                            "admin:projects_visibility_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Project"),
+                        "icon": 'tactic',
+                        "link": reverse_lazy(
+                            "admin:projects_project_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Project Metadata"),
+                        "icon": 'menu',
+                        "link": reverse_lazy(
+                            "admin:projects_projectmetadata_changelist"
+                        ),
+                    },
+                ]
+            },
+            {
+                "title": _("Dataset Management"),
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Datasets"),
+                        "icon": 'task',
+                        "link": reverse_lazy(
+                            "admin:datasets_dataset_changelist"
+                        ),
+                    },
+                ]
+            },
+            {
                 "title": _("Models Management"),
                 "collapsible": True,
                 "items": [
@@ -233,6 +282,13 @@ UNFOLD = {
                             ),
                     },
                     {
+                        "title": _("Model Tags"),
+                        "icon": "sell",
+                        "link": reverse_lazy(
+                            "admin:ml_models_modeltag_changelist"
+                            ),
+                    },
+                    {
                         "title": _("ML Models"),
                         "icon": "mindfulness",
                         "link": reverse_lazy(
@@ -248,6 +304,19 @@ UNFOLD = {
                     }
                 ],
             },
+            {
+                "title": _("Training"),
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Training sessions"),
+                        "icon": "model_training",
+                        "link": reverse_lazy(
+                            "admin:training_trainingsession_changelist"
+                            ),
+                    },  
+                ]  
+            }
  
         ],
     },

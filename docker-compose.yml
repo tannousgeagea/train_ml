@@ -20,9 +20,9 @@ services:
     dns:
       10.0.0.5
     ports:
-      - 9091:9090
-      - 8081:8081
-      - 8083:8083
+      - ${INET_HTTP_SERVER_PORT}:${INET_HTTP_SERVER_PORT}
+      - ${DJANGO_ADMIN_PORT}:${DJANGO_ADMIN_PORT}
+      - ${API_PORT}:${API_PORT}
     env_file: .env
     depends_on:
       - postgres
