@@ -17,10 +17,12 @@ services:
         groupid: ${groupid}
     networks:
       - internal
+    # network_mode: host
     dns:
-      10.0.0.5
+      - 10.0.0.5
     ports:
       - ${INET_HTTP_SERVER_PORT}:${INET_HTTP_SERVER_PORT}
+      - ${EVENT_API_PORT}:${EVENT_API_PORT}
       - ${DJANGO_ADMIN_PORT}:${DJANGO_ADMIN_PORT}
       - ${API_PORT}:${API_PORT}
     env_file: .env
@@ -39,6 +41,18 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+
+  rabbitmq:
+    image: "rabbitmq:3-management-alpine"
+    container_name: train-ml-rabbitmq
+    env_file: .env
+    networks:
+      - internal
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_VHOST: "/"
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
   postgres:
     image: postgres:latest

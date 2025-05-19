@@ -1,0 +1,21 @@
+{
+  "settings_version": "0.0.6",
+  "datasets_dir": "/home/appuser/src/train_ml/datasets",
+  "weights_dir": "weights",
+  "runs_dir": "runs",
+  "uuid": "c6b9f2911adec654e924939ea89039f3d61a6436f8f74538c8c3239912fdf538",
+  "sync": true,
+  "api_key": "",
+  "openai_api_key": "",
+  "clearml": true,
+  "comet": true,
+  "dvc": true,
+  "hub": false,
+  "mlflow": false,
+  "neptune": true,
+  "raytune": true,
+  "tensorboard": false,
+  "wandb": false,
+  "vscode_msg": true,
+  "openvino_msg": true
+}
