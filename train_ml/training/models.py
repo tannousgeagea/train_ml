@@ -11,6 +11,7 @@ class TrainingSession(models.Model):
 
     session_id = models.IntegerField() 
     config = models.JSONField(blank=True, null=True)
+    metrics = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)

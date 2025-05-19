@@ -1,7 +1,7 @@
-from .yolo.trainer import YOLOModel
+from .yolo.trainer import YOLOTrainer
 
 TRAINER_MAP = {
-    "yolo": YOLOModel,
+    "yolo": YOLOTrainer,
 }
 
 def get_trainer(framework_name: str):

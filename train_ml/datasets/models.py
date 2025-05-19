@@ -1,6 +1,9 @@
 from django.db import models
 from projects.models import Project
 
+def get_version_file(instance, filename):
+    return f"dataset/{instance.name}/{instance.version}/{filename}"
+
 class Dataset(models.Model):
     """
     Represents a dataset used for model training and evaluation.
@@ -9,7 +12,7 @@ class Dataset(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='datasets')
     name = models.CharField(max_length=255, unique=True)
     version = models.PositiveIntegerField() 
-    version_file = models.FileField(upload_to="versions/", null=True, blank=True)
+    version_file = models.FileField(upload_to=get_version_file, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)

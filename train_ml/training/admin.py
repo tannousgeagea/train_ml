@@ -15,26 +15,3 @@ class TrainingSessionAdmin(ModelAdmin):
     )
     list_filter = ("status", "started_at", "completed_at")
     search_fields = ("model_version__model__name",)
-    readonly_fields = (
-        "model_version",
-        "started_at",
-        "completed_at",
-        "log_path",
-        "error_message",
-        "progress",
-        "status",
-    )
-
-    fieldsets = (
-        (None, {
-            "fields": (
-                "model_version",
-                "status",
-                "progress",
-                "started_at",
-                "completed_at",
-                "log_path",
-                "error_message",
-            )
-        }),
-    )
