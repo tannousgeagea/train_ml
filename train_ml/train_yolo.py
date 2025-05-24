@@ -1,5 +1,16 @@
+import os
 import argparse
 from ultralytics import YOLO
+from ultralytics.utils import downloads
+
+def no_download_asset(path, *args, **kwargs):
+    print(f"❌ [BLOCKED] attempt_download_asset('{path}')")
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Model not found locally: {path}")
+    return path
+
+downloads.attempt_download_asset = no_download_asset
+os.environ["YOLO_CONFIG_DIR"] = "~/src/ultralytics_config"
 
 def main():
     parser = argparse.ArgumentParser(description="Train YOLOv8 model with custom parameters")
