@@ -1,10 +1,11 @@
 import os
 import requests
-from ml_models.models import Model, ModelVersion
+from ml_models.models import Model, ModelVersion, get_model_artifact_path
 from training.models import TrainingSession
+from django.conf import settings
 
-API_URL = "http://10.16.0.8:29085"
-SAVE_DIR = "/media/models"
+API_URL = "http://cvisionops.want:29085"
+SAVE_DIR = settings.MEDIA_ROOT
 
 def get_model_weights(model_version_id):
     try:
@@ -20,9 +21,10 @@ def get_model_weights(model_version_id):
         if not download_url:
             raise Exception("No download URL returned by the API.")
 
-        filename = os.path.basename(download_url.split("?")[0])
+        filename = get_model_artifact_path(model_version, os.path.basename(download_url.split("?")[0]))
         filepath = os.path.join(SAVE_DIR, filename)
-
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        
         print(f"Downloading from: {download_url}")
         with requests.get(download_url, stream=True) as r:
             r.raise_for_status()
@@ -31,6 +33,9 @@ def get_model_weights(model_version_id):
                     f.write(chunk)
 
         print(f"File downloaded successfully: {filepath}")
+        model_version.checkpoint = filename
+        model_version.save(update_fields=["checkpoint"])
+        
         return filepath
     
     except Exception as e:
@@ -45,7 +50,8 @@ def training_session_callback_factory(session_id: int):
             if event["type"] == "epoch_end":
                 session.progress = event.get("progress") or session.progress
                 session.metrics = event.get("metrics") or session.metrics
-                session.save(update_fields=["progress", "metrics"])
+                session.logs += event.get("logs") + "\n"
+                session.save(update_fields=["progress", "metrics", "logs"])
 
                 if session.model_version:
                     session.model_version.metrics = event["metrics"]
@@ -55,6 +61,7 @@ def training_session_callback_factory(session_id: int):
                 session.progress = 100.0
                 session.status = "completed"
                 session.metrics = event.get("metrics") or session.metrics
+                session.logs += event.get("logs") + "\n"
                 session.save(update_fields=["progress", "status", "metrics"])
 
             elif event["type"] == "error":

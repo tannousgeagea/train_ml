@@ -15,9 +15,11 @@ class TrainingSession(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=[("pending", "Pending"), ("running", "Running"), ("completed", "Completed"), ("failed", "Failed")], default="pending")
     progress = models.FloatField(default=0.0)
-    log_path = models.CharField(max_length=1024, blank=True, null=True)
+    logs = models.TextField(blank=True, null=True, help_text="Short log summary or status messages")
+    log_path = models.CharField(max_length=1024, blank=True, null=True, help_text="Path to the full training log file")
     error_message = models.TextField(blank=True, null=True)
 
     class Meta:

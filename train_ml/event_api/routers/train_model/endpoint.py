@@ -45,7 +45,7 @@ class TrainingRequest(BaseModel):
     project_id: str
     model_id: int
     model_version_id: int
-    base_version: int
+    base_version: Optional[int] = None
     model_name: str
     framework: str
     task: str
@@ -99,7 +99,8 @@ def trigger_training(
         TrainingSession.objects.create(
             model_version=model_version, 
             session_id=req.session_id, 
-            config=req.config
+            config=req.config,
+            logs="Training Session Initialized ... ... \n"
             )
         
         task = train_model.apply_async(args=(model_version.id, req.base_version,), task_id=x_request_id)

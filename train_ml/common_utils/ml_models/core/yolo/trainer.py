@@ -37,6 +37,7 @@ class YOLOTrainer(AbstractBaseModel):
                             "epoch": trainer.epoch + 1,
                             "progress": (trainer.epoch + 1) / trainer.epochs * 100,
                             "metrics": trainer.metrics,
+                            "logs": f"{trainer.epoch + 1} / {trainer.epochs}: {trainer.metrics}",
                         }
                     )
             
@@ -61,7 +62,8 @@ class YOLOTrainer(AbstractBaseModel):
                     "type": "complete",
                     "progress": 100.0,
                     "metrics": self.results.get("metrics", {}),
-                    "status": "completed"
+                    "status": "completed",
+                    "logs": "=== Training completed ===",
                 })
 
             return self.results
