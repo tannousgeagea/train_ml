@@ -31,13 +31,25 @@ class YOLOTrainer(AbstractBaseModel):
             def on_epoch_end(trainer):
                 self.logger.epoch(trainer.epoch + 1, trainer.metrics)
                 if self.on_event:
+                    raw_metrics = trainer.metrics or {}
+                    metrics_summary = {
+                        "iou": round(raw_metrics.get("metrics/box", 0.0), 3),
+                        "mAP": round(raw_metrics.get("metrics/mAP50(B)", 0.0), 3),
+                        "mAP50-95": round(raw_metrics.get("metrics/mAP50-95(B)", 0.0), 3),
+                        "recall": round(raw_metrics.get("metrics/recall(B)", 0.0), 3),
+                        "precision": round(raw_metrics.get("metrics/precision(B)", 0.0), 3),
+                        "box_loss": round(raw_metrics.get("val/box_loss", 0.0), 3),
+                        "cls_loss": round(raw_metrics.get("val/cls_loss", 0.0), 3),
+                        "dfl_loss": round(raw_metrics.get("val/dfl_loss", 0.0), 3),
+                    }
+                    
                     self.on_event(
                         event={
                             "type": "epoch_end",
                             "epoch": trainer.epoch + 1,
                             "progress": (trainer.epoch + 1) / trainer.epochs * 100,
-                            "metrics": trainer.metrics,
-                            "logs": f"{trainer.epoch + 1} / {trainer.epochs}: {trainer.metrics}",
+                            "metrics": metrics_summary,
+                            "logs": f"Epoch {trainer.epoch + 1} / {trainer.epochs}: {trainer.metrics}",
                         }
                     )
             

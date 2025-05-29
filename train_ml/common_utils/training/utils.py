@@ -1,5 +1,7 @@
 import os
 import requests
+import django
+django.setup()
 from ml_models.models import Model, ModelVersion, get_model_artifact_path
 from training.models import TrainingSession
 from django.conf import settings
@@ -7,12 +9,14 @@ from django.conf import settings
 API_URL = "http://cvisionops.want:29085"
 SAVE_DIR = settings.MEDIA_ROOT
 
-def get_model_weights(model_version_id):
+
+SESSION_UPDATE_URL = "http://10.16.0.8:29085"
+def get_model_weights(model_version_id, model_version):
     try:
 
-        model_version = ModelVersion.objects.filter(model_version_id=model_version_id).first()
-        if model_version and model_version.checkpoint:
-            return model_version.checkpoint.path
+        base_model_version = ModelVersion.objects.filter(model_version_id=model_version_id).first()
+        if base_model_version and base_model_version.checkpoint:
+            return base_model_version.checkpoint.path
             
         response = requests.get(f"{API_URL}/api/v1/model-versions/{model_version_id}", headers={"accept": "application/json"})
         response.raise_for_status()
@@ -41,15 +45,32 @@ def get_model_weights(model_version_id):
     except Exception as e:
         raise Exception(f"Error: {e}")
 
+def update_core_session(session_id, progress, logs, status, metrics, error_message=None):
+    try:
+        payload = {
+            "progress": progress,
+            "logs": logs,
+            "status": status,
+            "metrics": metrics,
+            "error_message": error_message,
+        }
+
+        url = f"{SESSION_UPDATE_URL}/api/v1/training-sessions/{session_id}"
+        res = requests.patch(url, json=payload, timeout=5)
+        res.raise_for_status()
+    except Exception as e:
+        print(f"Failed to send progress update to core: {e}")
 
 def training_session_callback_factory(session_id: int):
     def callback(event: dict):
         try:
             session = TrainingSession.objects.get(id=session_id)
+            if session.metrics is None:
+                session.metrics = []
 
             if event["type"] == "epoch_end":
                 session.progress = event.get("progress") or session.progress
-                session.metrics = event.get("metrics") or session.metrics
+                session.metrics.append(event.get("metrics"))
                 session.logs += event.get("logs") + "\n"
                 session.save(update_fields=["progress", "metrics", "logs"])
 
@@ -60,7 +81,7 @@ def training_session_callback_factory(session_id: int):
             elif event["type"] == "complete":
                 session.progress = 100.0
                 session.status = "completed"
-                session.metrics = event.get("metrics") or session.metrics
+                session.metrics.append(event.get("metrics"))
                 session.logs += event.get("logs") + "\n"
                 session.save(update_fields=["progress", "status", "metrics"])
 
@@ -69,9 +90,22 @@ def training_session_callback_factory(session_id: int):
                 session.error_message = event.get("error_message", "")
                 session.save(update_fields=["status", "error_message"])
 
+            update_core_session(
+                session_id=session.session_id,
+                progress=session.progress,
+                logs=event.get("logs"),
+                status=session.status,
+                metrics=event.get("metrics")
+            )
+
+
         except TrainingSession.DoesNotExist:
             print(f"Training session {session_id} not found.")
         except Exception as e:
             print(f"[TrainingCallback] Failed to update session: {e}")
     
     return callback
+
+if __name__ == "__main__":
+    model_path = get_model_weights(model_version_id=4)
+    print(model_path)
