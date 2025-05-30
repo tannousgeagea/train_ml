@@ -69,11 +69,21 @@ class YOLOTrainer(AbstractBaseModel):
             )
 
             self.logger.complete()
+
+            raw_metrics = self.results.results_dict
+            metrics_summary = {
+                "iou": round(raw_metrics.get("metrics/box", 0.0), 3),
+                "mAP": round(raw_metrics.get("metrics/mAP50(B)", 0.0), 3),
+                "mAP50-95": round(raw_metrics.get("metrics/mAP50-95(B)", 0.0), 3),
+                "recall": round(raw_metrics.get("metrics/recall(B)", 0.0), 3),
+                "precision": round(raw_metrics.get("metrics/precision(B)", 0.0), 3),
+            }
+
             if self.on_event:
                 self.on_event({
                     "type": "complete",
                     "progress": 100.0,
-                    "metrics": self.results.get("metrics", {}),
+                    "metrics": metrics_summary,
                     "status": "completed",
                     "logs": "=== Training completed ===",
                 })
@@ -97,4 +107,9 @@ class YOLOTrainer(AbstractBaseModel):
                 "logs": self.log_path
             }
         }
+    
+    def save(self, output_file):
+        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        self.model.save(output_file)
+        return output_file
 

@@ -2,10 +2,10 @@ version: '3.3'
 
 services:
   # computing unit
-  train-ml:
+  TrainML:
     shm_size: '2gb'
     image: tannousgeagea/train_ml:latest
-    container_name: train-ml-core
+    container_name: TrainML_core
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     build:
@@ -32,7 +32,7 @@ services:
     working_dir: /home/$user/src
     volumes:
       - .:/home/$user/src
-      - /home/wasteant/ws/Datasets:/media
+      - /home/wasteant/ws/TrainMLMedia:/media
     user: ${user}
     deploy:
       resources:
@@ -44,7 +44,7 @@ services:
 
   rabbitmq:
     image: "rabbitmq:3-management-alpine"
-    container_name: train-ml-rabbitmq
+    container_name: TrainML_rabbitmq
     env_file: .env
     networks:
       - internal
@@ -56,7 +56,7 @@ services:
 
   postgres:
     image: postgres:latest
-    container_name: train-ml-postgres
+    container_name: TrainML_postgres
     env_file: .env
     restart: unless-stopped
     environment:
