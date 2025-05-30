@@ -10,6 +10,7 @@ from django.core.files.base import ContentFile
 from typing import Literal
 from datasets.models import Dataset, get_version_file
 
+# API_URL = os.getenv("CORE_API_URL")
 API_URL = "http://cvisionops.want:29085"
 
 def download_dataset(version_id:str, save_dir:str, annotation_format:Literal["yolo", "coco"], dataset:Dataset):

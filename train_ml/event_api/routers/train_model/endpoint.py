@@ -120,7 +120,12 @@ def trigger_training(
             logs=f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - INFO - Training Session Initialized ... ... \n",
             )
         
-        task = train_model.apply_async(args=(model_version.id, req.base_version,), task_id=x_request_id)
+        
+        base_version = req.base_version
+        if not base_version and last_version and last_version.checkpoint: 
+            base_version = last_version.model_version_id
+
+        task = train_model.apply_async(args=(model_version.id, base_version,), task_id=x_request_id)
 
         return {
             "message": "Training triggered",
