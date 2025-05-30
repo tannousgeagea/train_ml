@@ -26,7 +26,7 @@ def train_model(self, version_id:str, base_model_version:int=None):
         logger = TrainingLogger(log_file=log_path)
 
         if base_model_version:
-            weights = get_model_weights(base_model_version)
+            weights = get_model_weights(base_model_version, version)
         else:
             weights = "yolo11n.pt"
 

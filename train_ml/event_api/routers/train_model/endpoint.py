@@ -11,6 +11,8 @@ from typing_extensions import Annotated
 import time
 import django
 django.setup()
+
+from django.shortcuts import get_object_or_404
 from django.shortcuts import get_object_or_404
 from ml_models.models import ModelVersion, Model, ModelTask, ModelFramework
 from datasets.models import Dataset
@@ -43,14 +45,14 @@ router = APIRouter(
 
 class TrainingRequest(BaseModel):
     project_id: str
-    model_id: int
-    model_version_id: int
-    base_version: int
+    base_version: Optional[int] = None
     model_name: str
+    dataset_name: str
+    dataset_version: int
     framework: str
     task: str
-    dataset_version: int
-    dataset_name: str
+    model_id: int
+    model_version_id: int
     dataset_id: int
     session_id: int
     config: dict = {}
@@ -62,31 +64,42 @@ def trigger_training(
     ):
     try:
 
-        task, _ = ModelTask.objects.get_or_create(name=req.task)
-        framework, _ = ModelFramework.objects.get_or_create(name=req.framework)
-        project_type, _ = ProjectType.objects.get_or_create(name=req.task)
-        project, _ = Project.objects.get_or_create(
-            name=req.project_id,
-            visibility=Visibility.objects.get(name="private"),
-            project_type=project_type,
-        )
+        task = get_object_or_404(ModelTask, name=req.task)
+        framework = get_object_or_404(ModelFramework, name=req.framework)
+        project_type = get_object_or_404(ProjectType, name=req.task)
+        visibility = get_object_or_404(Visibility, name="private")
+        project = Project.objects.filter(name=req.project_id).first()
+        if not project:
+            project, _ = Project.objects.get_or_create(
+                name=req.project_id,
+                visibility=visibility,
+                project_type=project_type,
+            )
 
-        model, _ = Model.objects.get_or_create(
-            project=project,
-            task=task,
-            framework=framework,
-            name=req.model_name
-        )
+        model = Model.objects.filter(name=req.model_name, project=project).first()
+        if not model:
+            model, _ = Model.objects.get_or_create(
+                project=project,
+                task=task,
+                framework=framework,
+                name=req.model_name
+            )
 
         last_version = ModelVersion.objects.filter(model=model).order_by("-version").first()
         version_number = int(last_version.version) + 1 if last_version else 1
-        dataset, _ = Dataset.objects.get_or_create(
-            name=req.dataset_name,
-            project=project,
-            version=req.dataset_version,
-            dataset_id=req.dataset_id,
-        )
 
+        dataset = Dataset.objects.filter(name=req.dataset_name, version=req.dataset_version, project=project).first()
+        if not dataset:
+            dataset, _ = Dataset.objects.get_or_create(
+                name=req.dataset_name,
+                project=project,
+                version=req.dataset_version,
+                dataset_id=req.dataset_id,
+            )
+
+        if ModelVersion.objects.filter(model=model, version=version_number).exists():
+            raise HTTPException(409, detail=f"Model Version {version_number} already exists for this model.")
+        
         model_version = ModelVersion.objects.create(
             model=model,
             model_version_id=req.model_version_id,
@@ -96,10 +109,15 @@ def trigger_training(
             status="training",
         )
 
+        if TrainingSession.objects.filter(model_version=model_version).exists():
+            raise HTTPException(409, detail="Training session already exists for this model version.")
+
+
         TrainingSession.objects.create(
             model_version=model_version, 
             session_id=req.session_id, 
-            config=req.config
+            config=req.config,
+            logs=f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - INFO - Training Session Initialized ... ... \n",
             )
         
         task = train_model.apply_async(args=(model_version.id, req.base_version,), task_id=x_request_id)
@@ -111,7 +129,7 @@ def trigger_training(
             "task_id": task.id,
         }
 
-    except (Model.DoesNotExist, Dataset.DoesNotExist):
-        raise HTTPException(404, "Model or dataset not found")
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
         raise HTTPException(500, str(e))
