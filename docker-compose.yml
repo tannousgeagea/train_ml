@@ -4,7 +4,7 @@ services:
   # computing unit
   TrainML:
     shm_size: '2gb'
-    image: tannousgeagea/train_ml:latest
+    image: tannousgeagea/trainml:latest
     container_name: TrainML_core
     stdin_open: true # docker run -i
     tty: true        # docker run -t
