@@ -7,10 +7,10 @@ LABEL maintainer="tannous.geagea@wasteant.com"
 LABEL com.wasteant.version="1.1b1"
 
 # [CHECK] Whether it is convenient to use the local user values or create ENV variables, or run everyhting with root
-ARG user
-ARG userid
-ARG group
-ARG groupid
+ARG user=appuser
+ARG userid=1000
+ARG group=appuser
+ARG groupid=1000
 
 # Install other necessary packages and dependencies
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y --no-install-recommends \
