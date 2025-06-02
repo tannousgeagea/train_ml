@@ -90,7 +90,7 @@ class ModelVersion(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    logs = models.FileField(upload_to=get_model_artifact_path, null=True, blank=True)
+    logs = models.FileField(upload_to=get_model_artifact_path, max_length=1024, null=True, blank=True)
     model_version_id = models.PositiveIntegerField() 
 
     class Meta:
