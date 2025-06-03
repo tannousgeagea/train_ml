@@ -2,7 +2,7 @@ from django.db import models
 from projects.models import Project
 
 def get_version_file(instance, filename):
-    return f"dataset/{instance.name}/{instance.version}/{filename}"
+    return f"dataset/{instance.project.name}/{instance.name}/{instance.version}/{filename}"
 
 class Dataset(models.Model):
     """
