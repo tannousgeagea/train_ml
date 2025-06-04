@@ -11,7 +11,7 @@ from fastapi.routing import APIRoute
 
 QUERIES_DIR = os.path.dirname(__file__) + "/queries"
 QUERIES = [
-    f"data_reader.routers.predictions.queries.{f.replace('/', '.')[:-3]}" 
+    f"api.routers.predictions.queries.{f.replace('/', '.')[:-3]}" 
     for f in os.listdir(QUERIES_DIR) 
     if f.endswith('.py') 
     if not f.endswith('__.py')

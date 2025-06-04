@@ -48,7 +48,10 @@ def get_model(model_version_id):
     if not mv:
         raise HTTPException(status_code=404, detail=f"model version {model_version_id} not found")
     
-    return mv
+    return {
+        "weights": mv.checkpoint.path,
+        "framework": mv.model.framework.name
+    }
         
 
 @router.api_route(
@@ -68,7 +71,27 @@ async def infer(
         image = Image.open(io.BytesIO(image_bytes))
         detections = predictor.predict(image=image, confidence_threshold=confidence_threshold)
 
-        return detections.to_dict()
+        predictions = [
+            {
+                "x": int(xyxy[0]),
+                "y": int(xyxy[1]),
+                "width":int(xyxy[2] - xyxy[0]),
+                "height":int( xyxy[3] - xyxy[1]),
+                "xyxyn": detections.xyxyn.tolist()[i],
+                "xyxy": xyxy.tolist(),
+                "confidence": float(detections.confidence.astype(float)[i]),
+                "class_id": int(detections.class_id.astype(int)[i]),
+                "class_label": detections.data['class_name'][i],
+                "id": str(i),
+            } for i, xyxy in enumerate(detections.xyxy.astype(int))
+        ]
+
+
+        return {
+            "width": image.size[0],
+            "height": image.size[1],
+            "predictions": predictions
+        }
 
     except HTTPException as e:
         raise e
