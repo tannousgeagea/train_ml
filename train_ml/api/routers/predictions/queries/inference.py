@@ -7,15 +7,11 @@ import django
 django.setup()
 from PIL import Image
 from asgiref.sync import sync_to_async
-import numpy as np
 from fastapi import APIRouter, HTTPException, status
-from datetime import datetime
 from typing import Callable, Optional
 from fastapi import Request
 from fastapi import Response
-from django.db.models import F
 from fastapi.routing import APIRoute, APIRouter
-from django.db import transaction
 from fastapi import UploadFile, File
 from ml_models.models import ModelVersion
 from common_utils.ml_models.inference import get_inference_plugin
@@ -64,9 +60,9 @@ async def infer(
     ):
     try:
         mv = await get_model(model_version_id)
-        predictor_cls = get_inference_plugin(framework=mv.model.framework.name)
+        predictor_cls = get_inference_plugin(framework=mv["framework"])
 
-        predictor = predictor_cls(weights=mv.checkpoint.path)
+        predictor = predictor_cls(weights=mv["weights"])
         image_bytes =  await file.read()
         image = Image.open(io.BytesIO(image_bytes))
         detections = predictor.predict(image=image, confidence_threshold=confidence_threshold)
