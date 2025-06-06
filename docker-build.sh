@@ -2,6 +2,8 @@
 
 set -e  # Exit on error
 
+
+source .env
 # === Configuration ===
 DOCKER_USER=$DOCKER_USER
 IMAGE_NAME=trainml
