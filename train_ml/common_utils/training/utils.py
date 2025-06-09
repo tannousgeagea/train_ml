@@ -140,9 +140,8 @@ def training_session_callback_factory(session_id: int):
             elif event["type"] == "complete":
                 session.progress = 100.0
                 session.status = "completed"
-                session.metrics.append(event.get("metrics"))
                 session.logs += event.get("logs") + "\n"
-                session.save(update_fields=["progress", "status", "metrics", "logs"])
+                session.save(update_fields=["progress", "status", "logs"])
 
                 if session.model_version:
                     session.model_version.status = "trained"
