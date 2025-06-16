@@ -86,6 +86,7 @@ async def infer(
         return {
             "width": image.size[0],
             "height": image.size[1],
+            "num_detections": len(detections),
             "predictions": predictions
         }
 

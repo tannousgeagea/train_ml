@@ -1,4 +1,5 @@
 
+import cv2
 import os
 from PIL import Image
 import numpy as np
@@ -18,8 +19,11 @@ class YOLOInferencePlugin(BaseInferencePlugin):
         return YOLO(self.weights)
 
     def predict(self, image: Image.Image, confidence_threshold:float=0.25) -> Detections:
+        image = image.convert('RGB')
         img_array = np.array(image)
-        results = self.model(img_array, conf=confidence_threshold)
+        cv_image = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+
+        results = self.model(cv_image, conf=confidence_threshold)
         detections = Detections.from_ultralytics(
             ultralytics_results=results[0]
         )

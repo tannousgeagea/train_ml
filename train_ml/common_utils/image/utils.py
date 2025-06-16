@@ -1,5 +1,9 @@
 import cv2
 import os
+import io
+import requests
+from PIL import Image
+import numpy as np
 
 from common_utils.annotation.utils import (
     load_yolo_segmentation_labels,
@@ -72,3 +76,22 @@ def load_image_and_mask(image_path, annotation_dir, image_prefix="rgb", mask_pre
         raise ValueError(f'undefined annotation mode: {annotation_mode}')
         
     return image, polygons
+
+async def load_image(
+        url:str,
+        name:str=None,
+        save=False,
+):
+    r = requests.get(url, stream=True)
+    if r.status_code == 200:
+        img = Image.open(io.BytesIO(r.content))
+        img = img.convert('RGB')
+
+        image_file = None
+        if save:
+            image_file = f"{name}.jpg"
+            img.save(image_file)
+
+        img = np.array(img)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        return img, image_file
